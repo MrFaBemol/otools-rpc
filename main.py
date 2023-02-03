@@ -1,16 +1,42 @@
-# This is a sample Python script.
-
-# Press Maj+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from models.otools import OTools
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+
+def method_test(text="DEFAULT"):
+    print(text)
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+_MENU_TREE = {
+    'items': {
+        'Sub 1': {
+                'items': {
+                    'Sub 1.1': {
+                        'action': method_test,
+                        'args': ["j'appelle dans sub 1"]
+                    },
+                    'Sub 1.2': {
+                        'action': method_test,
+                    }
+                }
+            },
+            'Sub 2': {
+                'items': {
+                    'Sub 2.1': {
+                        'action': method_test,
+                    },
+                    'Sub 2.2': {
+                        'action': method_test,
+                    }
+                }
+            },
+            'Sub 3': {
+                'action': method_test,
+            }
+    },
+
+}
+
+
+test = OTools(_MENU_TREE)
+test.run()
