@@ -1,0 +1,32 @@
+{
+    "items": {
+        "List projects": {
+            "shortcut": "l",
+            "items": {
+                "Sub 1.1": {
+                    "action": "method_test",
+                    "args": ["j'appelle dans sub 1"]
+                },
+                "Sub 1.2": {
+                    "action": "method_test"
+                }
+            }
+        },
+        "New project": {
+            "shortcut": "n",
+            "items": {
+                "Sub 2.1": {
+                    "action": "method_test"
+                },
+                "Sub 2.2": {
+                    "action": "method_test"
+                }
+            }
+        },
+        "Manage Odoo versions": {
+            "shortcut": "v",
+            "action": "method_test"
+        }
+    }
+
+}

@@ -6,15 +6,19 @@ BACK_MENU = "[b] Back"
 QUIT_MENU = "[q] Quit"
 
 
-class OToolsMenu:
+class CLIMenu:
 
 
 
-    def __init__(self, tree):
+    def __init__(self, tree, obj = None):
         self._MENU_TREE = tree
         self._LOCATION_PATH = list()
         self._LOCATION_INFOS = {}
         self._RUN = False
+
+        self._obj = obj
+        if self._obj is not None:
+            self._check_obj_methods(self._MENU_TREE)
 
         self._cd("")
 
@@ -34,6 +38,18 @@ class OToolsMenu:
     # --------------------------------------------
     #                   PRIVATE
     # --------------------------------------------
+
+    def _get_action_callable(self, action):
+        return getattr(self._obj, action, None) if isinstance(action, str) else action
+
+    def _check_obj_methods(self, tree):
+        if 'action' in tree:
+            action = self._get_action_callable(tree['action'])
+            assert callable(action), f"{self._obj} has no callable method named `{action or tree['action']}`"
+        items = tree.get('items', dict())
+        for sub_tree in items.values():
+            self._check_obj_methods(sub_tree)
+
 
 
     def _get_location_menu_items(self) -> list[str]:
@@ -57,7 +73,7 @@ class OToolsMenu:
             self._LOCATION_PATH = list()
             path = list()
 
-        # End of path > run to location & return infos
+        # End of path > run from beginning to location & return infos
         if not path:
             target = self._MENU_TREE
             try:
@@ -103,7 +119,8 @@ class OToolsMenu:
         # Move to selected path (might be a command only menu item)
         self._cd(choice)
         # Execute an action if defined
-        if fn := self.get_location_data('action'):
+        if action := self.get_location_data('action'):
+            fn = self._get_action_callable(action)
             fn(*self.get_location_data('args', []))
         # If there is no sub menu for this location, go back.
         if not self.get_location_data('items'):

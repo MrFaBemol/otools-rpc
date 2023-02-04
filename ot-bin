@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
+
+import otools
+import time
+import argparse
+import argcomplete
+
+
+
+
+# def session(a, b):
+#     return a + b
+#
+# def project(a, b):
+#     return a - b
+#
+# def mul(a, b):
+#     return a * b
+#
+# def div(a, b):
+#     return a / b
+#
+#
+#
+# root_parser = argparse.ArgumentParser()
+# cmd_parser = root_parser.add_subparsers(
+#     title="command", help="oTools commands"
+# )
+#
+# arg_template = {
+#     "dest": "operands",
+#     "type": float,
+#     "nargs": 1,
+#     "metavar": "OPERAND",
+#     "help": "a numeric value",
+# }
+#
+# session_parser = cmd_parser.add_parser("session", help="Give session infos")
+# session_parser.add_argument(**arg_template)
+# session_parser.set_defaults(func=session)
+#
+# project_parser = cmd_parser.add_parser("project", help="List projects")
+# project_parser.add_argument(**arg_template)
+# project_parser.set_defaults(func=project)
+#
+#
+#
+# args = root_parser.parse_args()
+#
+# print(args.func(*args.operands))
+
+
+
+
+ot = otools.get_session()
+ot.run()
+
+time.sleep(1.5)
+
+ot.save()
+
+# test = OTools(_MENU_TREE)
+# test.run()
+
+# with open("/home/gautier/src/otools/data/.ot", "ab+") as f:
+#     pickle.dump(test, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+
+

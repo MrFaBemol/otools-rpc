@@ -1,1 +1,2 @@
 simple-term-menu==1.6.1
+argcomplete==2.0.0
