@@ -1,6 +1,6 @@
 # otools-rpc
 
-[![Version](https://img.shields.io/badge/version-0.2.4-blue.svg)](https://pypi.org/project/otools-rpc/)
+[![Version](https://img.shields.io/badge/version-0.2.5-blue.svg)](https://pypi.org/project/otools-rpc/)
 [![Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://pypi.org/project/otools-rpc/)
 
 otools-rpc is a Python package for interacting with the Odoo ERP system through XML-RPC requests. It provides a convenient way to communicate with Odoo and perform various operations. Please note that the package is currently in the testing/alpha phase, and further improvements and updates are expected.
@@ -24,18 +24,20 @@ You can install otools-rpc using pip:
 $ pip install otools-rpc
 ```
 
+See on pypi: https://pypi.org/project/otools-rpc/
+
 ## Usage
 Here are some examples of how to use otools-rpc to interact with the Odoo ERP system via the external API:
 
 ```python
-from otools_rpc.external_api import Environnement
+from otools_rpc.external_api import Environment
 
 url = "http://localhost:8069/"
 username = "admin"
 password = "admin"
 
 # Create an instance of the environment
-env = Environnement(url, username, password, db='my_odoo')
+env = Environment(url, username, password, db='my_odoo')
 env = env.with_context(lang='en_US')
 print(env)
 
@@ -65,4 +67,4 @@ print("Created invoice:", invoice_id)
 invoice_id.action_post()
 ```
 
-More details are coming soon
+More details are coming soon...
