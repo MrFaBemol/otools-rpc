@@ -103,7 +103,7 @@ class Environment(dict):
 
     def log_request(self, recordset, *args, **kwargs):
         # Todo: add more infos about performance.
-        self.logger.debug(f"Executing {args[0]} on {recordset} with args: {args[1:]} / kwargs: {kwargs}")
+        self.logger.trace(f"Executing {args[0]} on {recordset} with args: {args[1:]} / kwargs: {kwargs}")
         self.requests.append({
             'model': recordset._name,
             'method': args[0],
