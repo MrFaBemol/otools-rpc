@@ -1,0 +1,68 @@
+# otools-rpc
+
+[![Version](https://img.shields.io/badge/version-0.2.4-blue.svg)](https://pypi.org/project/otools-rpc/)
+[![Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://pypi.org/project/otools-rpc/)
+
+otools-rpc is a Python package for interacting with the Odoo ERP system through XML-RPC requests. It provides a convenient way to communicate with Odoo and perform various operations. Please note that the package is currently in the testing/alpha phase, and further improvements and updates are expected.
+
+## Features
+
+[//]: # (### Environnement Class)
+
+The `Environnement` class represents the environment for interacting with the Odoo ERP system. It provides the following features:
+
+- Authentication: Authenticate with the Odoo system using username and password.
+- Access Models: Access different models (tables) in the Odoo system.
+- Caching: Caching mechanism to improve performance.
+- Logging: Logging capabilities with customizable log levels.
+
+## Installation
+
+You can install otools-rpc using pip:
+
+```console
+$ pip install otools-rpc
+```
+
+## Usage
+Here are some examples of how to use otools-rpc to interact with the Odoo ERP system via the external API:
+
+```python
+from otools_rpc.external_api import Environnement
+
+url = "http://localhost:8069/"
+username = "admin"
+password = "admin"
+
+# Create an instance of the environment
+env = Environnement(url, username, password, db='my_odoo')
+env = env.with_context(lang='en_US')
+print(env)
+
+# Example: Create an invoice for a specific partner
+partner_id = env['res.partner'].search([('name', '=', 'Mitchell Admin')], limit=1)
+invoice_vals = {
+    'partner_id': partner_id.id,
+    'date_invoice': '2023-05-12',
+    'type': 'out_invoice',
+    'invoice_line_ids': [
+        (0, 0, {
+            'product_id': env['product.product'].search([('name', '=', 'Product A')], limit=1).id,
+            'quantity': 5,
+            'price_unit': 10.0,
+        }),
+        (0, 0, {
+            'product_id': env['product.product'].search([('name', '=', 'Product B')], limit=1).id,
+            'quantity': 3,
+            'price_unit': 15.0,
+        }),
+    ],
+}
+invoice_id = env['account.move'].create(invoice_vals)
+print("Created invoice:", invoice_id)
+
+# Posting the invoice
+invoice_id.action_post()
+```
+
+More details are coming soon
