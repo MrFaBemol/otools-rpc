@@ -1,7 +1,7 @@
 # otools-rpc
 
-[![Version](https://img.shields.io/badge/version-0.2.5-blue.svg)](https://pypi.org/project/otools-rpc/)
-[![Status](https://img.shields.io/badge/status-alpha-orange.svg)](https://pypi.org/project/otools-rpc/)
+[![Version](https://img.shields.io/pypi/v/otools-rpc?color=blue&label=version)](https://pypi.org/project/otools-rpc/)
+[![Status](https://img.shields.io/pypi/status/otools-rpc?color=orange.svg)](https://pypi.org/project/otools-rpc/)
 
 otools-rpc is a Python package for interacting with the Odoo ERP system through XML-RPC requests. It provides a convenient way to communicate with Odoo and perform various operations. Please note that the package is currently in the testing/alpha phase, and further improvements and updates are expected.
 
