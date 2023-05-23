@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="otools-rpc",
-    version="0.2.5",
+    version="0.2.6",
     description="A tool to interact with Odoo's external API.",
     packages=find_packages(exclude=["tests"]),
     long_description=long_description,
@@ -22,7 +22,10 @@ setup(
         "Intended Audience :: Developers",
         "Natural Language :: English"
     ],
-    install_requires=["loguru >= 0.7.0"],
+    install_requires=[
+        "loguru >= 0.7.0",
+        "requests == 2.29.0" #Higher version can break your docker python lib
+    ],
     extras_require={
         "dev": ["pytest>=7.0", "twine>=4.0.2"],
     },
