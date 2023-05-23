@@ -27,14 +27,18 @@ $ pip install otools-rpc
 See on pypi: https://pypi.org/project/otools-rpc/
 
 ## Usage
+
+### Environment
 Here are some examples of how to use otools-rpc to interact with the Odoo ERP system via the external API:
 
 ```python
 from otools_rpc.external_api import Environment
 
+
 url = "http://localhost:8069/"
 username = "admin"
 password = "admin"
+master_password = "adminadmin"
 
 # Create an instance of the environment
 env = Environment(url, username, password, db='my_odoo')
@@ -65,6 +69,26 @@ print("Created invoice:", invoice_id)
 
 # Posting the invoice
 invoice_id.action_post()
+
+```
+
+### DBManager
+```python
+from otools_rpc.db_manager import DBManager
+
+url = "http://localhost:8069/"
+master_password = "adminadmin"
+
+dbmanager = DBManager(url, master_password)
+
+#Return list of all the available DB in your Odoo ENV
+dbmanager.dbobject.list()
+
+#Duplicating my_odoo to my_new_odoo
+db.manager.duplicate(db='my_odoo', new_name="my_new_odoo")
+
+#Deleting my_new_odoo
+db.manager.drop(db='my_new_odoo')
 ```
 
 More details are coming soon...
