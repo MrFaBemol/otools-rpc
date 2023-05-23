@@ -15,9 +15,12 @@ setup(
     author_email="gcasabona.pro@gmail.com",
     license="MIT",
     classifiers=[
+        "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.8",
         "Operating System :: OS Independent",
+        "Intended Audience :: Developers",
+        "Natural Language :: English"
     ],
     install_requires=["loguru >= 0.7.0"],
     extras_require={
