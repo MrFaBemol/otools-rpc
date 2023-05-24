@@ -104,7 +104,7 @@ class RecordSet:
 
     @staticmethod
     def _format_domain(domain: list[tuple]) -> list[list]:
-        return list(map(list, domain))
+        return list(map(lambda e: e if isinstance(e, str) else list(e), domain))
 
     @log_request
     def _execute(self, method, *args, **kw):
@@ -113,15 +113,20 @@ class RecordSet:
             args = [self._ids] + list(args)
         kw['context'] = self.context | kw.get('context', dict())
 
-        return self._env.models.execute_kw(
-            self._env._db,
-            self._env.uid,
-            self._env._password,
-            self._name,
-            method,
-            args,
-            kw,
-        )
+        try:
+            return self._env.models.execute_kw(
+                self._env._db,
+                self._env.uid,
+                self._env._password,
+                self._name,
+                method,
+                args,
+                kw,
+            )
+        except Exception as e:
+            self.logger.error(f"Error while executing {self._name}.{method}():")
+            self.logger.debug(f"args / kwargs:\n {args} \n {kw}")
+            self.logger.error("Odoo API Response:\n" + str(e).replace('\\n', '\n'))
 
     # --------------------------------------------
     #                   ORM
