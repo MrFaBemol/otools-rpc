@@ -5,6 +5,7 @@ import copy
 from typing import Union
 from loguru import logger as loguru_logger
 from .recordset import RecordSet
+from .common import frozendict
 
 
 class Environment(dict):
@@ -33,7 +34,7 @@ class Environment(dict):
 
         self.requests = list()
         self.cache = {}
-        self._context = dict()          # Todo: use a frozendict for context things
+        self._context = frozendict()
 
         # Todo: make it an object
         self.user = None
@@ -47,7 +48,7 @@ class Environment(dict):
             self.authenticate()
 
     def __missing__(self, key):
-        res = RecordSet(key, self)
+        res = RecordSet(key, self, context=self._context)
         if self._has_missing_cache(key):
             self.cache.update({
                 key: {
@@ -108,7 +109,7 @@ class Environment(dict):
         return None
 
     def with_context(self, **kw):
-        self._context = self._context | kw
+        self._context = self._context.copy(**kw)
         return self
 
 

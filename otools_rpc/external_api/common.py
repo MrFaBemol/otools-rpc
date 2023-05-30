@@ -33,20 +33,18 @@ def cache(op=None):
 
 
 
+# --------------------------------------------
+#               frozendict stuff
+# --------------------------------------------
+def remove(fn):
+    def decorator(self, *args, **kwargs):
+        raise NotImplementedError(f'{fn.__name__} not allowed on {self.__name__}')
+    return decorator
 
-class FrozenDict(dict):
-    """A class that allow you to lock dictionnary so no option will be available other than get
 
-    """    
-    
-    # Decorator
-    def remove(fn):
-        def decorator(self, *args, **kwargs):
-            raise NotImplementedError(f'{fn.__name__} not allowed on {__name__}')
+class frozendict(dict):
+    """ A class that allow you to lock dictionary so no option will be available other than get """
 
-        return decorator
-
-    # Magic Method
     @remove
     def __delitem__(self, *args) -> None:
         ...
@@ -74,3 +72,10 @@ class FrozenDict(dict):
     @remove
     def update(self, *args) -> None:
         ...
+
+    def copy(self, **kw) -> "frozendict":
+        return frozendict({
+            **self,
+            **kw,
+        })
+

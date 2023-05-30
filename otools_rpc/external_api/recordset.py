@@ -1,11 +1,10 @@
-import copy
 import xmlrpc.client
-from .common import assert_same_model, cache, log_request, model
+from .common import assert_same_model, cache, log_request, model, frozendict
 from typing import Union
 
 
 class RecordSet:
-    def __init__(self, name, env, ids: list[int] = None, context: dict = None):
+    def __init__(self, name, env, ids: list[int] = None, context: frozendict = None):
         self._name = name
         self._env = env
         self._curr = -1
@@ -16,7 +15,7 @@ class RecordSet:
             1) from the recordset it was created
             2) from the general environment 
         """
-        self._context = copy.deepcopy(context) or copy.deepcopy(env.context) or dict()
+        self._context = context.copy() if context is not None else frozendict()
 
         self.logger = self._env.logger
 
@@ -152,7 +151,7 @@ class RecordSet:
         return self._execute('check_object_reference', module, xml_id)
 
     def with_context(self, **kw):
-        self._context = self._context | kw
+        self._context = self._context.copy(**kw)
         return self
 
 
