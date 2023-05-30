@@ -30,3 +30,47 @@ def cache(op=None):
             return fn(self, *args, **kwargs)
         return wrapper
     return decorator
+
+
+
+
+class FrozenDict(dict):
+    """A class that allow you to lock dictionnary so no option will be available other than get
+
+    """    
+    
+    # Decorator
+    def remove(fn):
+        def decorator(self, *args, **kwargs):
+            raise NotImplementedError(f'{fn.__name__} not allowed on {__name__}')
+
+        return decorator
+
+    # Magic Method
+    @remove
+    def __delitem__(self, *args) -> None:
+        ...
+
+    @remove
+    def __setitem__(self, *args) -> None:
+        ...
+
+    @remove
+    def clear(self, *args) -> None:
+        ...
+
+    @remove
+    def pop(self, *args) -> None:
+        ...
+
+    @remove
+    def popitem(self, *args) -> None:
+        ...
+
+    @remove
+    def setdefault(self, *args) -> None:
+        ...
+
+    @remove
+    def update(self, *args) -> None:
+        ...
