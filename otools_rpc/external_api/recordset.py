@@ -1,4 +1,5 @@
 import copy
+import xmlrpc.client
 from .common import assert_same_model, cache, log_request, model
 from typing import Union
 
@@ -35,7 +36,7 @@ class RecordSet:
     def __next__(self):
         if self._curr < len(self) - 1:
             self._curr += 1
-            return RecordSet(self._name, self._env, [self._ids[self._curr]])
+            return self._recordset(self._ids[self._curr])
         raise StopIteration
 
     def __getitem__(self, item):
@@ -123,7 +124,10 @@ class RecordSet:
                 args,
                 kw,
             )
+
         except Exception as e:
+            if isinstance(e, xmlrpc.client.Fault) and 'cannot marshal' in str(e):
+                return None
             self.logger.error(f"Error while executing {self._name}.{method}():")
             self.logger.debug(f"args / kwargs:\n {args} \n {kw}")
             self.logger.error("Odoo API Response:\n" + str(e).replace('\\n', '\n'))
@@ -198,7 +202,18 @@ class RecordSet:
         return self._recordset(res_id)
 
 
+    # --- ORM helpers ---
+
+
     def mapped(self, field: str):
         return [getattr(rec, field) for rec in self]
 
+    def filtered(self, func: Union[callable, str]):
+        if isinstance(func, str):
+            name = func
+            func = lambda rec: rec[name]
+            # func = lambda rec: any(rec.mapped(name))      # Odoo behavior
+        return self.browse([rec.id for rec in self if func(rec)])
 
+    def filtered_domain(self, domain: list[tuple]):
+        return self.search([('id', 'in', self.ids)] + domain)

@@ -1,7 +1,15 @@
 # otools-rpc
 
 [![Version](https://img.shields.io/pypi/v/otools-rpc?color=blue&label=version)](https://pypi.org/project/otools-rpc/)
-[![Status](https://img.shields.io/pypi/status/otools-rpc?color=orange.svg)](https://pypi.org/project/otools-rpc/)
+[![LastCommit](https://img.shields.io/github/last-commit/MrFaBemol/otools-rpc?color=green)](https://en.wikipedia.org/wiki/MIT_License)
+[![Status](https://img.shields.io/pypi/status/otools-rpc?color=orange)](https://pypi.org/project/otools-rpc/)
+[![License](https://img.shields.io/github/license/MrFaBemol/otools-rpc?color=blue)](https://en.wikipedia.org/wiki/MIT_License)
+[![Downloads](https://img.shields.io/pypi/dm/otools-rpc?color=blue)](https://pypi.org/project/otools-rpc/)
+
+
+
+
+
 
 otools-rpc is a Python package for interacting with the Odoo ERP system through XML-RPC requests. It provides a convenient way to communicate with Odoo and perform various operations. Please note that the package is currently in the testing/alpha phase, and further improvements and updates are expected.
 
@@ -9,7 +17,7 @@ otools-rpc is a Python package for interacting with the Odoo ERP system through 
 
 [//]: # (### Environnement Class)
 
-The `Environnement` class represents the environment for interacting with the Odoo ERP system. It provides the following features:
+The `Environment` class represents the environment for interacting with the Odoo ERP system. It provides the following features:
 
 - Authentication: Authenticate with the Odoo system using username and password.
 - Access Models: Access different models (tables) in the Odoo system.
@@ -85,10 +93,15 @@ dbmanager = DBManager(url, master_password)
 dbmanager.dbobject.list()
 
 #Duplicating my_odoo to my_new_odoo
-db.manager.duplicate(db='my_odoo', new_name="my_new_odoo")
+dbmanager.duplicate(db='my_odoo', new_name="my_new_odoo")
 
 #Deleting my_new_odoo
-db.manager.drop(db='my_new_odoo')
+dbmanager.drop(db='my_new_odoo')
 ```
 
 More details are coming soon...
+
+
+![Stars](https://img.shields.io/github/stars/MrFaBemol/otools-rpc?style=social)
+![Watchers](https://img.shields.io/github/watchers/MrFaBemol/otools-rpc?style=social)
+![Forks](https://img.shields.io/github/forks/MrFaBemol/otools-rpc?style=social)
