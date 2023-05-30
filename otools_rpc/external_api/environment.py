@@ -3,14 +3,24 @@ import xmlrpc.client
 import re
 import copy
 from typing import Union
-from loguru import logger
+from loguru import logger as loguru_logger
 from .recordset import RecordSet
 
 
 class Environment(dict):
     # Todo: Add a cache system
 
-    def __init__(self, url: str, username: str, password: str, db: str = None, auto_auth: bool = True, log_level: str = None, **kw):
+    def __init__(
+            self,
+            url: str,
+            username: str,
+            password: str,
+            db: str = None,
+            auto_auth: bool = True,
+            logger: loguru_logger = None,
+            log_level: str = None,
+            **kw
+    ):
         super().__init__(**kw)
 
         self._url = url[:-1] if url[-1] == "/" else url
@@ -28,9 +38,10 @@ class Environment(dict):
         # Todo: make it an object
         self.user = None
 
-        self.logger = logger
-        self.logger.remove()
-        self.logger.add(sys.stderr, level=log_level or "INFO")
+        self.logger = logger if isinstance(logger, type(loguru_logger)) else loguru_logger
+        if logger is None:
+            self.logger.remove()
+            self.logger.add(sys.stderr, level=log_level or "INFO")
 
         if auto_auth:
             self.authenticate()

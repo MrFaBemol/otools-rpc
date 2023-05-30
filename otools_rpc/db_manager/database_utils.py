@@ -31,4 +31,6 @@ class DBManager:
     def drop(self, db):
         res = requests.post(self._drop_url, data={'master_pwd': self._password, 'name': db})
         return res
-    
+
+    def list(self):
+        return self.dbobject.list()
