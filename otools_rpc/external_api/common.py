@@ -26,7 +26,7 @@ def assert_same_model(op=None):
 def cache(op=None):
     def decorator(fn):
         def wrapper(self, *args, **kwargs):
-            print(f"Cache {op or fn.__name__} on {self}")
+            self.env.logger.log("FTRACE", f"[CACHE] {op or fn.__name__} on {self}")
             return fn(self, *args, **kwargs)
         return wrapper
     return decorator
