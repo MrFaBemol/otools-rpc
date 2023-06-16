@@ -42,6 +42,7 @@ class Environment(dict):
         self.logger = logger if isinstance(logger, type(loguru_logger)) else loguru_logger
         if logger is None:
             self.logger.remove()
+            self.logger.level("FTRACE", no=3, color="<blue>")
             self.logger.add(sys.stderr, level=log_level or "INFO")
 
         if auto_auth:
@@ -115,7 +116,8 @@ class Environment(dict):
 
     def log_request(self, recordset, *args, **kwargs):
         # Todo: add more infos about performance.
-        self.logger.trace(f"Executing {args[0]} on {recordset} with args: {args[1:]} / kwargs: {kwargs}")
+        self.logger.trace(f"Executing {args[0]} on {recordset}")
+        self.logger.log("FTRACE", f"└── with args: {args[1:]} / kwargs: {kwargs}")
         self.requests.append({
             'model': recordset._name,
             'method': args[0],
