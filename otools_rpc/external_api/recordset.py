@@ -130,6 +130,7 @@ class RecordSet:
             self.logger.error(f"Error while executing {self._name}.{method}():")
             self.logger.debug(f"args / kwargs:\n {args} \n {kw}")
             self.logger.error("Odoo API Response:\n" + str(e).replace('\\n', '\n'))
+            raise e
 
     # --------------------------------------------
     #                   ORM
