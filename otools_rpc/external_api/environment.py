@@ -1,15 +1,13 @@
 import sys
 import xmlrpc.client
 import re
-import copy
-from typing import Union
 from loguru import logger as loguru_logger
 from .recordset import RecordSet
 from .common import frozendict
+from .cache import Cache
 
 
 class Environment(dict):
-    # Todo: Add a cache system
 
     def __init__(
             self,
@@ -33,7 +31,7 @@ class Environment(dict):
         self.models = None
 
         self.requests = list()
-        self.cache = {}
+        self.cache = Cache(self)
         self._context = frozendict()
 
         # Todo: make it an object
@@ -49,15 +47,7 @@ class Environment(dict):
             self.authenticate()
 
     def __missing__(self, key):
-        res = RecordSet(key, self, context=self._context)
-        if self._has_missing_cache(key):
-            self.cache.update({
-                key: {
-                    'fields': res.fields_get(),
-                    'records': dict(),
-                }
-            })
-        return res
+        return RecordSet(key, self, context=self._context)
 
     def __getitem__(self, key):
         assert self.user or key == 'res.users', "You must be authenticated to access models"
@@ -137,31 +127,3 @@ class Environment(dict):
         return re.search(db_re, url).group(3)
 
 
-
-    # --------------------------------------------
-    #                   CACHE
-    # --------------------------------------------
-
-
-    def _has_missing_cache(self, key):
-        return key not in self.cache
-
-    def _update_cache_records(self, key, vals_dict: dict):
-        self.cache[key]['records'].update(vals_dict)
-
-    def update_cache_records(self, key: str, vals_list: list):
-        """ Transform a read or search_read result into a usable dict and update the cache """
-        vals_dict = dict()
-        for r in copy.deepcopy(vals_list):
-            i = r.pop('id')
-            vals_dict[i] = r
-        self._update_cache_records(key, vals_dict)
-
-    def delete_cached_records(self, key: str, ids: Union[int, list[int]]):
-        ids = ids if isinstance(ids, list) else [ids]
-        for i in ids:
-            self.cache[key]['records'].pop(i)
-
-    # def get_cached_value(self, key: str, ids: Union[int, list] = None):
-    #     ids = ids if isinstance(ids, list) else [ids]
-    #     return self.cache[key]['records']
