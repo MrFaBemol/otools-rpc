@@ -45,10 +45,8 @@ class RecordSet:
             return getattr(self, item)
 
     def __getattr__(self, attr):
-        if attr in self._env.cache.get(self._name, dict()).get('fields', list()):
-            # Todo: code this instead of having a weird patch
-            # self.ensure_one()
-            return self._env.cache[self._name]['records'].get(self.id, dict()).get(attr, False)
+        if attr != 'fields_get' and self._env.cache[self._name].field_exists(attr):
+            return self._env.cache[self._name][self.id][attr].get()
         else:
             def wrapper(*args, **kw):
                 return self._execute(attr, *args, **kw)
@@ -140,9 +138,8 @@ class RecordSet:
     def browse(self, ids: Union[int, list[int]]) -> "RecordSet":
         return self._recordset(ids)
 
-    def fields_get(self, attributes: list[str] = None):
-        attributes = attributes or ['string', 'help', 'type']
-        return self._execute('fields_get', attributes=attributes)
+    # def fields_get(self, attributes: list[str] = None):
+    #     return self._execute('fields_get', attributes=attributes)
 
     @model
     def check_object_reference(self, module, xml_id):
@@ -164,17 +161,16 @@ class RecordSet:
         ids = self._execute('search', self._format_domain(domain), **kw)
         return self._recordset(ids)
 
+    @cache('read')
     def read(self, fields: list[str] = None, **kw):
         fields = fields or list()
         res = self._execute('read', fields=fields, **kw)
-        self._env.update_cache_records(self._name, res)
         return res
 
     @model
     def search_read(self, domain: list[tuple], fields: list[str] = None, **kw):
         fields = fields or list()
         res = self._execute('search_read', self._format_domain(domain), fields=fields, **kw)
-        self._env.update_cache_records(self._name, res)
         return self._recordset([r.get('id') for r in res])
 
     @model
@@ -182,19 +178,19 @@ class RecordSet:
         return self._execute('search_count', self._format_domain(domain))
 
     @model
+    @cache('create')
     def create(self, vals_list: Union[dict, list[dict]]):
         vals_list = vals_list if isinstance(vals_list, list) else [vals_list]
         ids = self._execute('create', vals_list)
         return self._recordset(ids)
 
+    @cache('write')
     def write(self, vals: dict):
         return self._execute('write', vals)
 
     @cache('delete')
     def unlink(self):
         res = self._execute('unlink')
-        if res:
-            self._env.delete_cached_records(self._name, self._ids)
         return res
 
     def copy(self):
@@ -206,6 +202,9 @@ class RecordSet:
 
 
     def mapped(self, field: str):
+        """ Perform a read only if any of the record has dirty cache """
+        if self.cache_expired(field):
+            self.read([field])
         return [getattr(rec, field) for rec in self]
 
     def filtered(self, func: Union[callable, str]):
@@ -217,3 +216,13 @@ class RecordSet:
 
     def filtered_domain(self, domain: list[tuple]):
         return self.search([('id', 'in', self.ids)] + domain)
+
+
+
+    # --------------------------------------------
+    #              CACHE HELPERS
+    # --------------------------------------------
+
+
+    def cache_expired(self, field: str):
+        return self.env.cache[self._name].cache_expired(field, self.ids)
