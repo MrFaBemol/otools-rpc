@@ -18,6 +18,8 @@ class Environment(dict):
             auto_auth: bool = True,
             logger: loguru_logger = None,
             log_level: str = None,
+
+            cache_default_expiration: int = 10,
             **kw
     ):
         super().__init__(**kw)
@@ -27,21 +29,23 @@ class Environment(dict):
         self._password = password
         self._db = db or self._extract_db_from_url()
 
+        # We need logger first
+        self.logger = logger if isinstance(logger, type(loguru_logger)) else loguru_logger
+        if logger is None:
+            self.logger.remove()
+            self.logger.add(sys.stderr, level=log_level or "INFO")
+        self.logger.level("FTRACE", no=3, color="<blue>")
+
         self.common = xmlrpc.client.ServerProxy(f"{self._url}/xmlrpc/2/common", allow_none=True)
         self.models = None
 
         self.requests = list()
-        self.cache = Cache(self)
+        self.cache = Cache(self, cache_default_expiration)
         self._context = frozendict()
 
         # Todo: make it an object
         self.user = None
 
-        self.logger = logger if isinstance(logger, type(loguru_logger)) else loguru_logger
-        if logger is None:
-            self.logger.remove()
-            self.logger.level("FTRACE", no=3, color="<blue>")
-            self.logger.add(sys.stderr, level=log_level or "INFO")
 
         if auto_auth:
             self.authenticate()
