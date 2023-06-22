@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="otools-rpc",
-    version="0.3.1",
+    version="0.4.0",
     description="A tool to interact with Odoo's external API.",
     packages=find_packages(exclude=["tests"]),
     long_description=long_description,
