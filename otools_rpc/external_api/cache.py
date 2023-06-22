@@ -10,12 +10,12 @@ class Cache(dict):
     >>> True
     """
 
-    def __init__(self, env, default_expiration_time: int = 60):
+    def __init__(self, env, default_expiration: int = 10):
         super().__init__()
         self._env = env
         self.config = {
             'expiration': {
-                'default': default_expiration_time,
+                'default': default_expiration
             }
         }
 
@@ -31,6 +31,8 @@ class Cache(dict):
     @property
     def env(self):
         return self._env
+
+
 
 
 class CacheModel(dict):
