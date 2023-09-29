@@ -24,7 +24,7 @@ setup(
     ],
     install_requires=[
         "loguru >= 0.7.0",
-        "requests == 2.29.0"  # Higher version can break your docker python lib
+        "requests",
     ],
     extras_require={
         "dev": ["pytest>=7.0", "twine>=4.0.2"],
