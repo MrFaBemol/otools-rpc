@@ -22,6 +22,8 @@ class RecordSet:
     def __str__(self):
         return f"{self._name}({', '.join(map(str, self._ids))})"
 
+    __repr__ = __str__
+
     def __bool__(self):
         return bool(self._ids)
 
