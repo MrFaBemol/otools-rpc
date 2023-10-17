@@ -95,7 +95,8 @@ class CacheModel(dict):
 
         elif op == 'delete':
             for record in records:
-                del self[record.id]
+                if record.id in self:
+                    del self[record.id]
 
         elif op == 'read':
             for rec_data in data:
