@@ -34,7 +34,12 @@ class Environment(dict):
         if logger is None:
             self.logger.remove()
             self.logger.add(sys.stderr, level=log_level or "INFO")
-        self.logger.level("FTRACE", no=3, color="<blue>")
+
+        try:
+            self.logger.level("FTRACE", no=3, color="<blue>")       # Allow multiple environnements to share the same logger
+        except TypeError:
+            pass
+
 
         self.common = xmlrpc.client.ServerProxy(f"{self._url}/xmlrpc/2/common", allow_none=True)
         self.models = None
