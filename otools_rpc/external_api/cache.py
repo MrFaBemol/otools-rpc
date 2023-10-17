@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from .recordset import RecordSet
+from .utils import is_magic_number_list
 
 
 class Cache(dict):
@@ -10,7 +11,7 @@ class Cache(dict):
     >>> True
     """
 
-    def __init__(self, env, default_expiration: int = 10):
+    def __init__(self, env, default_expiration: int):
         super().__init__()
         self._env = env
         self.config = {
@@ -81,17 +82,30 @@ class CacheModel(dict):
         return any(self[res_id][field].is_expired for res_id in res_ids)
 
 
-    def update(self, op, records, data, *args, **kwargs):
-        """ `Main method` that is used by any method prefixed with @cache in RecordSet class """
+    def update(self, op, records, res, *args, **kwargs):
+        """
+        `Main method` that is used by any method prefixed with @cache in RecordSet class
+        Depending on the operation, res is different:
+        - create:   res is a RecordSet
+        - write:    res is a boolean
+        - delete:   res is a boolean
+        - read:     res is a list of dicts
+        """
+        fields_to_read_post_update = list()
+
         if op == 'create':
+            records = res       # Do not remove, so we can keep only 1 read statement at the end
             vals_list = [args[0]] if isinstance(args[0], dict) else args[0]
-            for record, vals in zip(data, vals_list):
+            for record, vals in zip(records, vals_list):
+                fields_to_read_post_update += self._sanitize_vals(vals)
                 self[record.id] = CacheRecord(self, record['id'])
                 self[record.id].update(vals)
 
-        elif op == 'write' and data:
+        elif op == 'write' and res:
+            vals = args[0]
             for record in records:
-                self[record.id].update(args[0])
+                fields_to_read_post_update += self._sanitize_vals(vals)
+                self[record.id].update(vals)
 
         elif op == 'delete':
             for record in records:
@@ -99,10 +113,31 @@ class CacheModel(dict):
                     del self[record.id]
 
         elif op == 'read':
-            for rec_data in data:
-                res_id = rec_data.pop('id')
-                self[res_id].update(rec_data)
+            for rec_dict in res:
+                res_id = rec_dict.pop('id')
+                self[res_id].update(rec_dict)
 
+
+        if fields_to_read_post_update:
+            records.read(fields_to_read_post_update)
+
+
+
+    def _sanitize_vals(self, vals: dict) -> list:
+        """ Remove keys that are magic numbers and return them as a list of fields names """
+        fields_to_remove = list()
+        for k, v in vals.items():
+            if (
+                self.field_exists(k)
+                and self._fields[k]['type'] in ['one2many', 'many2many']
+                and is_magic_number_list(v)
+            ):
+                fields_to_remove.append(k)
+
+        for k in fields_to_remove:
+            vals.pop(k)
+
+        return fields_to_remove
 
 
 class CacheRecord(dict):

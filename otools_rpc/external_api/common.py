@@ -27,8 +27,9 @@ def cache(op=None):
     def decorator(fn):
         def wrapper(self, *args, **kwargs):
             res = fn(self, *args, **kwargs)
-            self.env.logger.log("FTRACE", f"[CACHE] {op or fn.__name__} on {self} {args} {kwargs}")
-            self.env.cache[self._name].update(op, self, res, *args, **kwargs)
+            if self.env.cache_enabled:
+                self.env.logger.log("FTRACE", f"[CACHE] {op or fn.__name__} on {self} {args} {kwargs}")
+                self.env.cache[self._name].update(op, self, res, *args, **kwargs)
             return res
         return wrapper
     return decorator
