@@ -56,7 +56,7 @@ class Environment(dict):
         # --------------------------------------------
         #                   CACHE
         # --------------------------------------------
-        if not self.cache_enabled:
+        if not cache_enabled:
             cache_default_expiration = 0
         elif cache_no_expiration:
             cache_default_expiration = 31_536_000       # 1 year for fun (365 * 24 * 60 * 60)
