@@ -20,6 +20,8 @@ class Environment(dict):
             log_level: str = None,
 
             cache_default_expiration: int = 10,
+            cache_no_expiration: bool = False,
+            cache_enabled: bool = True,
             **kw
     ):
         super().__init__(**kw)
@@ -29,27 +31,40 @@ class Environment(dict):
         self._password = password
         self._db = db or self._extract_db_from_url()
 
-        # We need logger first
+        # --------------------------------------------
+        #                LOGGING
+        # --------------------------------------------
         self.logger = logger if isinstance(logger, type(loguru_logger)) else loguru_logger
-        if logger is None:
-            self.logger.remove()
-            self.logger.add(sys.stderr, level=log_level or "INFO")
-
         try:
             self.logger.level("FTRACE", no=3, color="<blue>")       # Allow multiple environnements to share the same logger
         except TypeError:
             pass
 
+        if logger is None:
+            self.logger.remove()
+            self.logger.add(sys.stderr, level=log_level or "INFO")
+
 
         self.common = xmlrpc.client.ServerProxy(f"{self._url}/xmlrpc/2/common", allow_none=True)
         self.models = None
-
         self.requests = list()
-        self.cache = Cache(self, cache_default_expiration)
         self._context = frozendict()
 
         # Todo: make it an object
         self.user = None
+
+        # --------------------------------------------
+        #                   CACHE
+        # --------------------------------------------
+        if not self.cache_enabled:
+            cache_default_expiration = 0
+        elif cache_no_expiration:
+            cache_default_expiration = 31_536_000       # 1 year for fun (365 * 24 * 60 * 60)
+
+        # Cache will always be created even if we don't use it to store infos
+        # It is used for helpers like field_exists()
+        self.cache = Cache(self, cache_default_expiration)
+        self.cache_enabled = cache_enabled
 
 
         if auto_auth:
