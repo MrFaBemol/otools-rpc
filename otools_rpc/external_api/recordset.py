@@ -1,5 +1,7 @@
 import xmlrpc.client
+from functools import reduce
 from .common import assert_same_model, cache, log_request, model, frozendict
+from .utils import is_relational_field
 from typing import Union
 
 
@@ -48,7 +50,7 @@ class RecordSet:
 
     def __getattr__(self, attr):
         if attr != 'fields_get' and self._env.cache[self._name].field_exists(attr):
-            return self._env.cache[self._name][self.id][attr].get()
+            return self._env.cache[self._name].get(self._ids, attr, context=self._context)
         else:
             def wrapper(*args, **kw):
                 return self._execute(attr, *args, **kw)
@@ -90,6 +92,10 @@ class RecordSet:
     def _model(self):
         return self._env[self._name]
         # return self._recordset(list())
+
+    @property
+    def model_cache(self):
+        return self._env.cache[self._name]
 
 
     def _recordset(self, ids: Union[list[int], int]):
@@ -164,7 +170,7 @@ class RecordSet:
         return self._recordset(ids)
 
     @cache('read')
-    def read(self, fields: list[str] = None, **kw):
+    def read(self, fields: list[str] = None, **kw) -> list[dict]:
         fields = fields or list()
         res = self._execute('read', fields=fields, **kw)
         return res
@@ -205,9 +211,20 @@ class RecordSet:
 
     def mapped(self, field: str):
         """ Perform a read only if any of the record has dirty cache """
-        if self.cache_expired(field):
-            self.read([field])
-        return [getattr(rec, field) for rec in self]
+        if not self.env.cache_enabled or self.cache_expired(field):
+            read_res = self.read([field])
+            if not self.env.cache_enabled:
+                self.env.logger.warning(f"With cache disabled, the result of mapped() is quite different from Odoo's behavior in case of relational fields. It only returns a list with raw results from API for now.")
+                return [rec.get(field) for rec in read_res]
+
+        res = [getattr(rec, field) for rec in self]
+        # Return a recordset if the field is relational
+        if is_relational_field(self.get_field_info(field, 'type')):
+            res = reduce(lambda a, b: a | b, res)
+            res = res.with_context(**self.context)
+
+        return res
+
 
     def filtered(self, func: Union[callable, str]):
         if isinstance(func, str):
@@ -227,4 +244,11 @@ class RecordSet:
 
 
     def cache_expired(self, field: str):
-        return self.env.cache[self._name].cache_expired(field, self.ids)
+        return self.model_cache.cache_expired(field, self.ids)
+
+    def get_field_info(self, field: str, info: str):
+        if self.model_cache.field_exists(field):
+            return self.model_cache.fields[field][info]
+        return None
+
+

@@ -50,21 +50,18 @@ class Environment(dict):
         self.requests = list()
         self._context = frozendict()
 
-        # Todo: make it an object
+        # Todo: make it an object (RecordSet)
         self.user = None
 
         # --------------------------------------------
         #                   CACHE
         # --------------------------------------------
-        if not cache_enabled:
-            cache_default_expiration = 0
-        elif cache_no_expiration:
-            cache_default_expiration = 31_536_000       # 1 year for fun (365 * 24 * 60 * 60)
-
         # Cache will always be created even if we don't use it to store infos
         # It is used for helpers like field_exists()
-        self.cache = Cache(self, cache_default_expiration)
         self.cache_enabled = cache_enabled
+        self.cache_no_expiration = cache_no_expiration
+        self.cache_default_expiration = cache_default_expiration
+        self.cache = Cache(self)
 
 
         if auto_auth:
@@ -98,6 +95,14 @@ class Environment(dict):
     def requests_count(self):
         return len(self.requests)
 
+    @property
+    def cache_expiration(self):
+        if not self.cache_enabled:
+            return 0
+        elif self.cache_no_expiration:
+            return 31_536_000       # 1 year for fun (365 * 24 * 60 * 60)
+        else:
+            return self.cache_default_expiration
 
     # --------------------------------------------
     #                   PUBLIC
