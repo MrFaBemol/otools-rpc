@@ -17,3 +17,6 @@ def is_magic_number(val: Any) -> bool:
 def is_magic_number_list(vals_list: Any) -> bool:
     return isinstance(vals_list, list) and all(is_magic_number(v) for v in vals_list)
 
+
+def is_relational_field(field_type: str) -> bool:
+    return field_type in ['many2one', 'one2many', 'many2many']

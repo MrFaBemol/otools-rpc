@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
+from typing import Union
 from .recordset import RecordSet
-from .utils import is_magic_number_list
+from .common import frozendict
+from .utils import is_magic_number_list, is_relational_field
 
 
 class Cache(dict):
@@ -11,14 +13,12 @@ class Cache(dict):
     >>> True
     """
 
-    def __init__(self, env, default_expiration: int):
+    def __init__(self, env):
         super().__init__()
         self._env = env
-        self.config = {
-            'expiration': {
-                'default': default_expiration
-            }
-        }
+
+        if self.is_enabled and self.default_expiration < 5:
+            self._env.logger.warning(f"The default expiration of your cache is {self.default_expiration} seconds, it is not recommended to use such a low value.")
 
     def __str__(self):
         return f"Cache({self._env})"
@@ -33,7 +33,13 @@ class Cache(dict):
     def env(self):
         return self._env
 
+    @property
+    def is_enabled(self):
+        return self._env.cache_enabled
 
+    @property
+    def default_expiration(self):
+        return self._env.cache_expiration
 
 
 class CacheModel(dict):
@@ -79,7 +85,27 @@ class CacheModel(dict):
         return field in self._fields
 
     def cache_expired(self, field: str, res_ids: list[int]):
-        return any(self[res_id][field].is_expired for res_id in res_ids)
+        return not self.cache.is_enabled or any(self[res_id][field].is_expired for res_id in res_ids)
+
+
+    def get(self, res_ids: Union[int, list[int]], field: str, context: frozendict = None):
+        """
+        Get a list of records from the cache
+        If the records are not in the cache, they are fetched from the API and stored in the cache
+        """
+        if not isinstance(res_ids, list):
+            res_ids = [res_ids]
+
+        if not self.cache.is_enabled:
+            api_read_str = f"env['{self.name}'].browse({res_ids}).read(fields=['{field}'])"
+            self.cache.env.logger.critical(f"Cache is disabled, you can't use dotted notation to access fields. Please use the API directly: {api_read_str}")
+            raise EnvironmentError("You must activate cache to use dotted notation")
+
+        if len(res_ids) == 1:
+            return self[res_ids[0]][field].get()
+        else:
+            recordset = self.api.with_context(**context).browse(res_ids)
+            return recordset.mapped(field)
 
 
     def update(self, op, records, res, *args, **kwargs):
@@ -119,7 +145,7 @@ class CacheModel(dict):
 
 
         if fields_to_read_post_update:
-            records.read(fields_to_read_post_update)
+            records.read(list(set(fields_to_read_post_update)))
 
 
 
@@ -197,6 +223,18 @@ class CacheField:
     def infos(self):
         return self._record.model.fields[self.name]
 
+    @property
+    def type(self):
+        return self.infos['type']
+
+    @property
+    def is_relational(self):
+        return is_relational_field(self.type)
+
+
+
+
+
     def get(self):
         if self.is_expired:
             self._read()
@@ -210,14 +248,17 @@ class CacheField:
             Many2one: save the name of the record (returned by API by default)
             One2many: save the inverse relation (the m2o)
         """
-        if self.infos['type'] in ['many2one', 'one2many', 'many2many']:
+        if self.is_relational:
             comodel_name = self.infos['relation']
             res_id = value
 
-            if self.infos['type'] == 'many2one' and isinstance(value, (tuple, list)):
+
+            if res_id is False:
+                res_id = []
+            elif self.type == 'many2one' and isinstance(value, (tuple, list)):
                 res_id = value[0]
                 self._record.model.cache[comodel_name][res_id]['name'].set(value[1])
-            elif self.infos['type'] == 'one2many':
+            elif self.type == 'one2many':
                 relation_field = self.infos['relation_field']
                 for i in res_id:
                     self._record.model.cache[comodel_name][i][relation_field].set(self._record.env_record.id)
@@ -234,7 +275,7 @@ class CacheField:
         self.set(self._record.env_record.read([self.name])[0].get(self.name))
 
     def _set_expiration(self):
-        validity_duration = self.validity_duration or self._record.model.cache.config['expiration']['default']
+        validity_duration = self.validity_duration or self._record.model.cache.default_expiration
         self.expiration = datetime.utcnow() + timedelta(seconds=validity_duration)
 
 

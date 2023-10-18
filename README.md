@@ -46,10 +46,10 @@ from otools_rpc.external_api import Environment
 url = "http://localhost:8069/"
 username = "admin"
 password = "admin"
-master_password = "adminadmin"
+db = "my_odoo"
 
 # Create an instance of the environment
-env = Environment(url, username, password, db='my_odoo')
+env = Environment(url, username, password, db=db)
 env = env.with_context(lang='en_US')
 print(env)
 
@@ -77,7 +77,6 @@ print("Created invoice:", invoice_id)
 
 # Posting the invoice
 invoice_id.action_post()
-
 ```
 
 ### DBManager
