@@ -246,7 +246,7 @@ class CacheField:
         This saves the value in the cache and set the expiration date also
             All relations: set it as a RecordSet to manipulate the field easily
             Many2one: save the name of the record (returned by API by default)
-            One2many: save the inverse relation (the m2o)
+            One2many: save the inverse relation (the m2o) if it exists
         """
         if self.is_relational:
             comodel_name = self.infos['relation']
@@ -258,7 +258,7 @@ class CacheField:
             elif self.type == 'many2one' and isinstance(value, (tuple, list)):
                 res_id = value[0]
                 self._record.model.cache[comodel_name][res_id]['name'].set(value[1])
-            elif self.type == 'one2many':
+            elif self.type == 'one2many' and 'relation_field' in self.infos:
                 relation_field = self.infos['relation_field']
                 for i in res_id:
                     self._record.model.cache[comodel_name][i][relation_field].set(self._record.env_record.id)
