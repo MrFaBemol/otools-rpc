@@ -85,7 +85,6 @@ class RecordSet:
 
     @property
     def id(self):
-        self.ensure_one()
         return False if not self._ids else self._ids[0]
 
     @property
